@@ -26,3 +26,10 @@ class Route(models.Model):
     destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_routes")
     distance = models.PositiveIntegerField()
 
+
+class Crew(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
