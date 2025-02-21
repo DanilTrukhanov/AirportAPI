@@ -15,6 +15,9 @@ class City(models.Model):
     name = models.CharField(max_length=100)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="cities")
 
+    def __str__(self):
+        return f"{self.name} ({self.country.name})"
+
 
 class Airport(models.Model):
     name = models.CharField(max_length=100)
@@ -58,7 +61,7 @@ class Airplane(models.Model):
 
 class Flight(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="flights")
-    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE, related_name="airplanes")
+    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE, related_name="flights")
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
