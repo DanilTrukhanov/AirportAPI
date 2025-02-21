@@ -12,9 +12,6 @@ class City(models.Model):
     name = models.CharField(max_length=100)
     country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="cities")
 
-    def __str__(self):
-        return f"{self.name}({self.country.name})"
-
 
 class Airport(models.Model):
     name = models.CharField(max_length=100)
@@ -22,3 +19,10 @@ class Airport(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Route(models.Model):
+    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="departing_routes")
+    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_routes")
+    distance = models.PositiveIntegerField()
+
