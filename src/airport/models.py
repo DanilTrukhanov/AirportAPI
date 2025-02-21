@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.core.validators import MinValueValidator
 from django.db import models
 
 
@@ -25,7 +27,7 @@ class Airport(models.Model):
 class Route(models.Model):
     source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="departing_routes")
     destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_routes")
-    distance = models.IntegerField()
+    distance = models.IntegerField(validators=[MinValueValidator(1)])
 
 
 class Crew(models.Model):
@@ -45,8 +47,8 @@ class AirplaneType(models.Model):
 
 class Airplane(models.Model):
     name = models.CharField(max_length=100)
-    rows = models.IntegerField()
-    seats_in_row = models.IntegerField()
+    rows = models.IntegerField(validators=[MinValueValidator(1)])
+    seats_in_row = models.IntegerField(validators=[MinValueValidator(1)])
     airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes")
 
     @property
@@ -71,3 +73,40 @@ class Ticket(models.Model):
     seat = models.IntegerField()
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE, related_name="tickets")
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+
+    @staticmethod
+    def validate_ticket(flight: Flight, row: int = None, seat: int = None):
+        if row:
+            if not 1 <= row <= flight.airplane.rows:
+                raise ValidationError(
+                    {
+                        "row": f"row must be in range (1, {flight.airplane.rows})"
+                    }
+                )
+        if seat:
+            if not 1 <= seat <= flight.airplane.seats_in_row:
+                raise ValidationError(
+                    {
+                        "seat": f"seat must be in range (1, {flight.airplane.seats_in_row})"
+                    }
+                )
+
+    def clean(self):
+        Ticket.validate_ticket(self.flight, row=self.row, seat=self.seat)
+
+    def save(
+        self,
+        *args,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.full_clean()
+        return super().save(*args, force_insert, force_update, using, update_fields)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["row", "seat"], name="unique_row_and_seat"),
+        ]
+        ordering = ["row", "seat"]
