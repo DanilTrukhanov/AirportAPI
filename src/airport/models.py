@@ -16,7 +16,7 @@ class City(models.Model):
     country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="cities")
 
     def __str__(self):
-        return f"{self.name} ({self.country.name})"
+        return f"{self.name}"
 
 
 class Airport(models.Model):
@@ -24,13 +24,16 @@ class Airport(models.Model):
     city = models.ForeignKey(City, on_delete=models.CASCADE, related_name="airports")
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
 
 class Route(models.Model):
     source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="departing_routes")
     destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_routes")
     distance = models.IntegerField(validators=[MinValueValidator(1)])
+
+    def __str__(self):
+        return f"{self.source.city.name} -> {self.destination.city.name}"
 
 
 class Crew(models.Model):
@@ -58,6 +61,9 @@ class Airplane(models.Model):
     def capacity(self) -> int:
         return self.rows * self.seats_in_row
 
+    def __str__(self):
+        return self.name
+
 
 class Flight(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="flights")
@@ -79,20 +85,18 @@ class Ticket(models.Model):
 
     @staticmethod
     def validate_ticket(flight: Flight, row: int = None, seat: int = None):
-        if row:
-            if not 1 <= row <= flight.airplane.rows:
-                raise ValidationError(
-                    {
-                        "row": f"row must be in range (1, {flight.airplane.rows})"
-                    }
-                )
-        if seat:
-            if not 1 <= seat <= flight.airplane.seats_in_row:
-                raise ValidationError(
-                    {
-                        "seat": f"seat must be in range (1, {flight.airplane.seats_in_row})"
-                    }
-                )
+        if not 1 <= row <= flight.airplane.rows:
+            raise ValidationError(
+                {
+                    "row": f"row must be in range (1, {flight.airplane.rows})"
+                }
+            )
+        if not 1 <= seat <= flight.airplane.seats_in_row:
+            raise ValidationError(
+                {
+                    "seat": f"seat must be in range (1, {flight.airplane.seats_in_row})"
+                }
+            )
 
     def clean(self):
         Ticket.validate_ticket(self.flight, row=self.row, seat=self.seat)
