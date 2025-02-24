@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
@@ -13,7 +15,9 @@ class Country(models.Model):
 
 class City(models.Model):
     name = models.CharField(max_length=100)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE, related_name="cities")
+    country = models.ForeignKey(
+        Country, on_delete=models.CASCADE, related_name="cities"
+    )
 
     def __str__(self):
         return f"{self.name}"
@@ -28,8 +32,12 @@ class Airport(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="departing_routes")
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_routes")
+    source = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="departing_routes"
+    )
+    destination = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="destination_routes"
+    )
     distance = models.IntegerField(validators=[MinValueValidator(1)])
 
     def __str__(self):
@@ -55,7 +63,9 @@ class Airplane(models.Model):
     name = models.CharField(max_length=100)
     rows = models.IntegerField(validators=[MinValueValidator(1)])
     seats_in_row = models.IntegerField(validators=[MinValueValidator(1)])
-    airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes")
+    airplane_type = models.ForeignKey(
+        AirplaneType, on_delete=models.CASCADE, related_name="airplanes"
+    )
 
     @property
     def capacity(self) -> int:
@@ -67,15 +77,40 @@ class Airplane(models.Model):
 
 class Flight(models.Model):
     route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="flights")
-    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE, related_name="flights")
+    airplane = models.ForeignKey(
+        Airplane, on_delete=models.CASCADE, related_name="flights"
+    )
     crew = models.ManyToManyField(Crew, related_name="flights")
     departure_time = models.DateTimeField()
     arrival_time = models.DateTimeField()
 
+    @staticmethod
+    def validate_time(departure_time: datetime, arrival_time: datetime):
+        if arrival_time < departure_time:
+            raise ValidationError(
+                {"arrival_time": "Arrival time must be before departure time."}
+            )
+
+    def clean(self):
+        Flight.validate_time(self.arrival_time, self.departure_time)
+
+    def save(
+        self,
+        *args,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.full_clean()
+        return super().save(*args, force_insert, force_update, using, update_fields)
+
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders"
+    )
 
 
 class Ticket(models.Model):
@@ -88,15 +123,11 @@ class Ticket(models.Model):
     def validate_ticket(flight: Flight, row: int = None, seat: int = None):
         if not 1 <= row <= flight.airplane.rows:
             raise ValidationError(
-                {
-                    "row": f"row must be in range (1, {flight.airplane.rows})"
-                }
+                {"row": f"row must be in range (1, {flight.airplane.rows})"}
             )
         if not 1 <= seat <= flight.airplane.seats_in_row:
             raise ValidationError(
-                {
-                    "seat": f"seat must be in range (1, {flight.airplane.seats_in_row})"
-                }
+                {"seat": f"seat must be in range (1, {flight.airplane.seats_in_row})"}
             )
 
     def clean(self):

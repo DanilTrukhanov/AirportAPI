@@ -9,7 +9,9 @@ from airport.models import (
     Flight,
     Crew,
     AirplaneType,
-    Airplane, Order, Ticket,
+    Airplane,
+    Order,
+    Ticket,
 )
 
 
@@ -54,7 +56,18 @@ class AirportCreateSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "city")
 
 
+class AirportCityNameField(serializers.PrimaryKeyRelatedField):
+    def display_value(self, instance):
+        return f"{instance.name} ({instance.city.name})"
+
+
 class RouteSerializer(serializers.ModelSerializer):
+    source = AirportCityNameField(
+        queryset=Airport.objects.select_related("city")
+    )
+    destination = AirportCityNameField(
+        queryset=Airport.objects.select_related("city")
+    )
     class Meta:
         model = Route
         fields = ("id", "source", "destination", "distance")
@@ -103,6 +116,11 @@ class FlightSerializer(serializers.ModelSerializer):
         )
     )
 
+    def validate(self, data):
+        data = super(FlightSerializer, self).validate(data)
+        Flight.validate_time(data["departure_time"], data["arrival_time"])
+        return data
+
     class Meta:
         model = Flight
         fields = ("id", "route", "airplane", "departure_time", "arrival_time", "crew")
@@ -112,9 +130,11 @@ class FlightListSerializer(FlightSerializer):
     route = serializers.StringRelatedField()
     airplane = serializers.StringRelatedField()
     crew = serializers.StringRelatedField(many=True)
+    available_tickets = serializers.SerializerMethodField(read_only=True)
 
+    def get_available_tickets(self, obj):
+        return obj.airplane.capacity - obj.tickets.count()
 
-class FlightRetrieveSerializer(FlightListSerializer):
     class Meta:
         model = Flight
         fields = (
@@ -124,7 +144,8 @@ class FlightRetrieveSerializer(FlightListSerializer):
             "departure_time",
             "arrival_time",
             "tickets",
-            "crew"
+            "crew",
+            "available_tickets",
         )
 
 
@@ -171,11 +192,7 @@ class AirplaneTypeListSerializer(serializers.ModelSerializer):
 class TicketSerializer(serializers.ModelSerializer):
     def validate(self, data):
         data = super(TicketSerializer, self).validate(data)
-        Ticket.validate_ticket(
-            data["flight"],
-            data["row"],
-            data["seat"]
-        )
+        Ticket.validate_ticket(data["flight"], data["row"], data["seat"])
         return data
 
     class Meta:
@@ -185,6 +202,7 @@ class TicketSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     tickets = TicketSerializer(many=True, read_only=False, allow_empty=False)
+
     class Meta:
         model = Order
         fields = ("id", "created_at", "tickets")
