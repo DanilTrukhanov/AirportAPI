@@ -106,7 +106,7 @@ class Flight(models.Model):
         return super().save(*args, force_insert, force_update, using, update_fields)
 
     class Meta:
-        ordering = ["-departure_time"]
+        ordering = ["departure_time"]
 
 
 class Order(models.Model):

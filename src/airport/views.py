@@ -1,6 +1,9 @@
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, filters
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
+from django_filters.rest_framework import DjangoFilterBackend
+
+from airport.filters import FlightFilter, RouteFilter
 from airport.models import (
     Country,
     City,
@@ -95,6 +98,9 @@ class RouteViewSet(
     queryset = Route.objects.all()
     serializer_class = RouteSerializer
     permission_classes = (ReadOnlyUserOrIsAdminPermission,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filterset_class = RouteFilter
+    search_fields = ("source__city__name", "destination__city__name")
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -110,8 +116,11 @@ class RouteViewSet(
                 "source__city__country", "destination__city__country"
             )
         return queryset.select_related(
-            "source", "destination", "source__city", "destination__city"
-        )
+            "source",
+            "destination",
+            "source__city",
+            "destination__city",
+        ).prefetch_related("flights")
 
 
 class CrewViewSet(viewsets.ModelViewSet):
@@ -172,6 +181,12 @@ class FlightViewSet(
         .all()
     )
     permission_classes = (ReadOnlyUserOrIsAdminPermission,)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+    )
+    filterset_class = FlightFilter
+    search_fields = ("route__source__city__name", "route__destination__city__name")
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
