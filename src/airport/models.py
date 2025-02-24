@@ -88,11 +88,11 @@ class Flight(models.Model):
     def validate_time(departure_time: datetime, arrival_time: datetime):
         if arrival_time < departure_time:
             raise ValidationError(
-                {"arrival_time": "Arrival time must be before departure time."}
+                {"arrival_time": "Arrival time must be later than departure time."}
             )
 
     def clean(self):
-        Flight.validate_time(self.arrival_time, self.departure_time)
+        Flight.validate_time(self.departure_time, self.arrival_time)
 
     def save(
         self,
@@ -104,6 +104,9 @@ class Flight(models.Model):
     ):
         self.full_clean()
         return super().save(*args, force_insert, force_update, using, update_fields)
+
+    class Meta:
+        ordering = ["-departure_time"]
 
 
 class Order(models.Model):

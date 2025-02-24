@@ -38,6 +38,7 @@ class CountryViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
+    mixins.CreateModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = Country.objects.all()
@@ -49,6 +50,7 @@ class CityViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
+    mixins.CreateModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = City.objects.all()
@@ -67,6 +69,7 @@ class AirportViewSet(
     mixins.ListModelMixin,
     mixins.RetrieveModelMixin,
     mixins.UpdateModelMixin,
+    mixins.CreateModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = Airport.objects.all()
@@ -165,7 +168,7 @@ class FlightViewSet(
             "route__destination__city",
             "airplane",
         )
-        .prefetch_related("crew")
+        .prefetch_related("crew", "tickets")
         .all()
     )
     permission_classes = (ReadOnlyUserOrIsAdminPermission,)
