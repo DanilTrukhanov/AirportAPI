@@ -1,0 +1,92 @@
+[
+    {
+        "model": "airport.country",
+        "pk": 1,
+        "fields": {
+            "name": "United Kingdom"
+        }
+    },
+    {
+        "model": "airport.country",
+        "pk": 2,
+        "fields": {
+            "name": "France"
+        }
+    },
+    {
+        "model": "airport.city",
+        "pk": 1,
+        "fields": {
+            "name": "London",
+            "country": 1
+        }
+    },
+    {
+        "model": "airport.city",
+        "pk": 2,
+        "fields": {
+            "name": "Paris",
+            "country": 2
+        }
+    },
+    {
+        "model": "airport.airport",
+        "pk": 1,
+        "fields": {
+            "name": "Heathrow",
+            "city": 1
+        }
+    },
+    {
+        "model": "airport.airport",
+        "pk": 2,
+        "fields": {
+            "name": "Charles de Gaulle",
+            "city": 2
+        }
+    },
+    {
+        "model": "airport.route",
+        "pk": 1,
+        "fields": {
+            "source": 1,
+            "destination": 2,
+            "distance": 344
+        }
+    },
+    {
+        "model": "airport.crew",
+        "pk": 1,
+        "fields": {
+            "first_name": "John",
+            "last_name": "Doe"
+        }
+    },
+    {
+        "model": "airport.airplanetype",
+        "pk": 1,
+        "fields": {
+            "name": "Boeing 737"
+        }
+    },
+    {
+        "model": "airport.airplane",
+        "pk": 1,
+        "fields": {
+            "name": "Boeing 737-800",
+            "rows": 20,
+            "seats_in_row": 6,
+            "airplane_type": 1
+        }
+    },
+    {
+        "model": "airport.flight",
+        "pk": 1,
+        "fields": {
+            "route": 1,
+            "airplane": 1,
+            "departure_time": "2025-02-21T10:00:00Z",
+            "arrival_time": "2025-02-21T12:00:00Z"
+        }
+    }
+]
