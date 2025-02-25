@@ -14,7 +14,8 @@ COUNTRY_PARAMETERS = [
     OpenApiParameter(
         "ordering",
         type={"type": "string"},
-        description="Ordering by country name. User '-' for descending order (ex. ?ordering=-name)",
+        description="Ordering by country name."
+                    " User '-' for descending order (ex. ?ordering=-name)",
         enum=["name", "-name"],
     ),
 ]
@@ -23,7 +24,8 @@ CITY_PARAMETERS = [
     OpenApiParameter(
         "search",
         type={"type": "string"},
-        description="Search a city by name, by country name, not case sensitive",
+        description="Search a city by name, by country name,"
+                    " not case sensitive",
         examples=[
             OpenApiExample("-"),
             OpenApiExample("Barcelona", value="Barcelona"),
@@ -42,10 +44,14 @@ AIRPORT_PARAMETERS = [
     OpenApiParameter(
         "search",
         type={"type": "string"},
-        description="Search an airport by name, by city name, by country name, not case sensitive",
+        description="Search an airport by name,"
+                    " by city name,"
+                    " by country name, not case sensitive",
         examples=[
             OpenApiExample("-"),
-            OpenApiExample("El Prat de Llobregat Aeropuerto", value="el prat"),
+            OpenApiExample(
+                "El Prat de Llobregat Aeropuerto", value="el prat"
+            ),
             OpenApiExample("Barcelona", value="Barcelona"),
             OpenApiExample("Spain", value="Spain"),
         ],
@@ -62,7 +68,9 @@ ROUTE_PARAMETERS = [
     OpenApiParameter(
         "search",
         type={"type": "string"},
-        description="Search a route by source, destination city and country name, not case sensitive",
+        description="Search a route by source,"
+                    " destination city and country name,"
+                    " not case sensitive",
         examples=[
             OpenApiExample("-"),
             OpenApiExample("Paris", value="Paris"),
@@ -161,7 +169,9 @@ FLIGHT_PARAMETERS = [
     OpenApiParameter(
         "search",
         type={"type": "string"},
-        description="Search a flight by route source city name and route destination city name, not case sensitive",
+        description="Search a flight by route source city name"
+                    " and route destination city name,"
+                    " not case sensitive",
         examples=[
             OpenApiExample("-"),
             OpenApiExample("Paris", value="Paris"),

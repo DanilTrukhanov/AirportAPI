@@ -268,7 +268,6 @@ class TestFlightFilters(TestCase):
             destination=airport_barcelona,
         )
 
-
         self.flight1 = sample_flight(route=self.barca_paris_route)
         self.flight2 = sample_flight(
             route=self.paris_barca_route,

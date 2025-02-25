@@ -80,7 +80,9 @@ class CityViewSet(
     ordering_fields = ("name", "country__name")
 
     def get_queryset(self):
-        return self.queryset.select_related("country").prefetch_related("airports")
+        return self.queryset.select_related(
+            "country"
+        ).prefetch_related("airports")
 
     def get_serializer_class(self):
         if self.action in ("create", "update"):
@@ -228,7 +230,10 @@ class FlightViewSet(
         filters.SearchFilter,
     )
     filterset_class = custom_filters.FlightFilter
-    search_fields = ("route__source__city__name", "route__destination__city__name")
+    search_fields = (
+        "route__source__city__name",
+        "route__destination__city__name"
+    )
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):

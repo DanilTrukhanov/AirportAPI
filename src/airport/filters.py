@@ -7,29 +7,23 @@ from airport.models import Flight, Route, Airport
 
 class FlightFilter(FilterSet):
     departure_date = django_filters.DateFilter(
-        field_name="departure_time",
-        lookup_expr="date"
+        field_name="departure_time", lookup_expr="date"
     )
     departure_date__gt = django_filters.DateFilter(
-        field_name="departure_time",
-        lookup_expr="date__gt"
+        field_name="departure_time", lookup_expr="date__gt"
     )
     departure_date__lt = django_filters.DateFilter(
-        field_name="departure_time",
-        lookup_expr="date__lt"
+        field_name="departure_time", lookup_expr="date__lt"
     )
 
     departure_time = django_filters.TimeFilter(
-        field_name="departure_time",
-        lookup_expr="time"
+        field_name="departure_time", lookup_expr="time"
     )
     departure_time__gt = django_filters.TimeFilter(
-        field_name="departure_time",
-        lookup_expr="time__gt"
+        field_name="departure_time", lookup_expr="time__gt"
     )
     departure_time__lt = django_filters.TimeFilter(
-        field_name="departure_time",
-        lookup_expr="time__lt"
+        field_name="departure_time", lookup_expr="time__lt"
     )
 
     route = django_filters.ModelChoiceFilter(

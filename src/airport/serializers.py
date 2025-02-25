@@ -68,6 +68,7 @@ class RouteSerializer(serializers.ModelSerializer):
     destination = AirportCityNameField(
         queryset=Airport.objects.select_related("city")
     )
+
     class Meta:
         model = Route
         fields = ("id", "source", "destination", "distance")
@@ -106,7 +107,8 @@ class CrewSerializer(serializers.ModelSerializer):
 
 class RouteField(serializers.PrimaryKeyRelatedField):
     def display_value(self, instance):
-        return f"{instance.source.city.name} -> {instance.destination.city.name}"
+        return (f"{instance.source.city.name} ->"
+                f" {instance.destination.city.name}")
 
 
 class FlightSerializer(serializers.ModelSerializer):
@@ -123,7 +125,14 @@ class FlightSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "departure_time", "arrival_time", "crew")
+        fields = (
+            "id",
+            "route",
+            "airplane",
+            "departure_time",
+            "arrival_time",
+            "crew"
+        )
 
 
 class FlightListSerializer(FlightSerializer):
@@ -152,7 +161,14 @@ class FlightListSerializer(FlightSerializer):
 class AirplaneSerializer(serializers.ModelSerializer):
     class Meta:
         model = Airplane
-        fields = ("id", "name", "rows", "seats_in_row", "airplane_type", "capacity")
+        fields = (
+            "id",
+            "name",
+            "rows",
+            "seats_in_row",
+            "airplane_type",
+            "capacity"
+        )
 
 
 class AirplaneListSerializer(serializers.ModelSerializer):
