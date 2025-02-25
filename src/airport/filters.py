@@ -1,5 +1,6 @@
 import django_filters
 from django_filters import FilterSet
+from rest_framework import filters
 
 from airport.models import Flight, Route, Airport
 
@@ -58,8 +59,13 @@ class RouteFilter(FilterSet):
     has_flights = django_filters.BooleanFilter(
         field_name="flights",
         lookup_expr="isnull",
+        exclude=True,
     )
 
     class Meta:
         model = Route
         fields = []
+
+
+class CountrySearchFilter(filters.SearchFilter):
+    search_param = "country"

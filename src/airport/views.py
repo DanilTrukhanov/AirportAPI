@@ -1,9 +1,9 @@
 from rest_framework import viewsets, mixins, filters
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema
 
-from airport.filters import FlightFilter, RouteFilter
+from airport import filters as custom_filters
 from airport.models import (
     Country,
     City,
@@ -15,6 +15,8 @@ from airport.models import (
     Flight,
     Order,
 )
+
+import airport.schema_parameters as schema_parameters
 from airport.serializers import (
     CountryListSerializer,
     CityListSerializer,
@@ -33,7 +35,6 @@ from airport.serializers import (
     FlightListSerializer,
     OrderSerializer,
 )
-
 from airport.permissions import ReadOnlyUserOrIsAdminPermission
 
 
@@ -47,9 +48,18 @@ class CountryViewSet(
     queryset = Country.objects.all()
     serializer_class = CountryListSerializer
     permission_classes = (ReadOnlyUserOrIsAdminPermission,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filter_backends = (
+        DjangoFilterBackend,
+        custom_filters.CountrySearchFilter,
+        filters.OrderingFilter,
+    )
     search_fields = ("name",)
     ordering_fields = ("name",)
+
+    @extend_schema(parameters=schema_parameters.COUNTRY_PARAMETERS)
+    def list(self, request, *args, **kwargs):
+        """Get list of countries"""
+        return super().list(request, *args, **kwargs)
 
 
 class CityViewSet(
@@ -61,7 +71,11 @@ class CityViewSet(
 ):
     queryset = City.objects.all()
     permission_classes = (ReadOnlyUserOrIsAdminPermission,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    )
     search_fields = ("name", "country__name")
     ordering_fields = ("name", "country__name")
 
@@ -73,6 +87,11 @@ class CityViewSet(
             return CityCreateSerializer
         return CityListSerializer
 
+    @extend_schema(parameters=schema_parameters.CITY_PARAMETERS)
+    def list(self, request, *args, **kwargs):
+        """Get list of cities"""
+        return super().list(request, *args, **kwargs)
+
 
 class AirportViewSet(
     mixins.ListModelMixin,
@@ -83,8 +102,13 @@ class AirportViewSet(
 ):
     queryset = Airport.objects.all()
     permission_classes = (ReadOnlyUserOrIsAdminPermission,)
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.SearchFilter,
+        filters.OrderingFilter,
+    )
     search_fields = ("name", "city__name", "city__country__name")
+    ordering_fields = ("name",)
 
     def get_serializer_class(self):
         if self.action in ("create", "update"):
@@ -94,6 +118,11 @@ class AirportViewSet(
     def get_queryset(self):
         queryset = self.queryset
         return queryset.select_related("city__country")
+
+    @extend_schema(parameters=schema_parameters.AIRPORT_PARAMETERS)
+    def list(self, request, *args, **kwargs):
+        """Get list of airports"""
+        return super().list(request, *args, **kwargs)
 
 
 class RouteViewSet(
@@ -107,7 +136,7 @@ class RouteViewSet(
     serializer_class = RouteSerializer
     permission_classes = (ReadOnlyUserOrIsAdminPermission,)
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
-    filterset_class = RouteFilter
+    filterset_class = custom_filters.RouteFilter
     search_fields = ("source__city__name", "destination__city__name")
 
     def get_serializer_class(self):
@@ -129,6 +158,11 @@ class RouteViewSet(
             "source__city",
             "destination__city",
         ).prefetch_related("flights")
+
+    @extend_schema(parameters=schema_parameters.ROUTE_PARAMETERS)
+    def list(self, request, *args, **kwargs):
+        """Get list of airports"""
+        return super().list(request, *args, **kwargs)
 
 
 class CrewViewSet(viewsets.ModelViewSet):
@@ -193,13 +227,18 @@ class FlightViewSet(
         DjangoFilterBackend,
         filters.SearchFilter,
     )
-    filterset_class = FlightFilter
+    filterset_class = custom_filters.FlightFilter
     search_fields = ("route__source__city__name", "route__destination__city__name")
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
             return FlightListSerializer
         return FlightSerializer
+
+    @extend_schema(parameters=schema_parameters.FLIGHT_PARAMETERS)
+    def list(self, request, *args, **kwargs):
+        """Get list of airports"""
+        return super().list(request, *args, **kwargs)
 
 
 class OrderViewSet(
@@ -224,3 +263,8 @@ class OrderViewSet(
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @extend_schema(parameters=schema_parameters.ORDER_PARAMETERS)
+    def list(self, request, *args, **kwargs):
+        """Get list of cities"""
+        return super().list(request, *args, **kwargs)
