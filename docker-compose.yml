@@ -8,7 +8,10 @@ services:
     ports:
       - "5432:5432"
     volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - postgres_airport_data:/var/lib/postgresql/data/
+    networks:
+      - airport-network
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB -h 127.0.0.1 || exit 1" ]
       interval: 10s
@@ -16,5 +19,26 @@ services:
       retries: 5
       start_period: 20s
 
+  web:
+    restart: always
+    build: .
+    container_name: airport-backend
+    command: ["/bin/sh", "/usr/src/commands/run_cinema_backend.sh"]
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./src:/usr/src/app
+    networks:
+      - airport-network
+
 volumes:
   postgres_airport_data:
+
+networks:
+  airport-network:
+    driver: bridge
