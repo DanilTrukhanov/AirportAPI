@@ -12,6 +12,9 @@ class Country(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ["name"]
+
 
 class City(models.Model):
     name = models.CharField(max_length=100)
@@ -22,6 +25,9 @@ class City(models.Model):
     def __str__(self):
         return f"{self.name}"
 
+    class Meta:
+        ordering = ["name"]
+
 
 class Airport(models.Model):
     name = models.CharField(max_length=100)
@@ -29,6 +35,9 @@ class Airport(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+    class Meta:
+        ordering = ["name"]
 
 
 class Route(models.Model):
@@ -51,12 +60,18 @@ class Crew(models.Model):
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
 
+    class Meta:
+        ordering = ["first_name", "last_name"]
+
 
 class AirplaneType(models.Model):
     name = models.CharField(max_length=100)
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ["name"]
 
 
 class Airplane(models.Model):
@@ -73,6 +88,9 @@ class Airplane(models.Model):
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ["name"]
 
 
 class Flight(models.Model):
@@ -114,6 +132,9 @@ class Order(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="orders"
     )
+
+    class Meta:
+        ordering = ["-created_at"]
 
 
 class Ticket(models.Model):
