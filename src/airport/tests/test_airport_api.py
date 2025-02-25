@@ -18,7 +18,7 @@ from airport.models import (
     Airplane,
     Flight,
 )
-from airport.serializers import RouteListSerializer
+from airport.serializers import RouteListSerializer, FlightListSerializer
 
 COUNTRY_URL = reverse("airport:country-list")
 CITY_URL = reverse("airport:city-list")
@@ -237,6 +237,104 @@ class TestRouteFilters(TestCase):
             | Q(destination__city__country__name=search_param)
         )
         serializer = RouteListSerializer(routes, many=True)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+
+class TestFlightFilters(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = get_user_model().objects.create_user(
+            email="user@user.com", password="1qazcde3"
+        )
+        self.client.force_authenticate(self.user)
+
+        spain = sample_country()
+        france = sample_country(name="France")
+
+        barca = sample_city(country=spain)
+        paris = sample_city(country=france)
+
+        airport_barcelona = sample_airport(city=barca)
+        airport_paris = sample_airport(name="Paris IA", city=paris)
+
+        self.barca_paris_route = sample_route(
+            source=airport_barcelona,
+            destination=airport_paris
+        )
+        self.paris_barca_route = sample_route(
+            source=airport_paris,
+            destination=airport_barcelona,
+        )
+
+
+        self.flight1 = sample_flight(route=self.barca_paris_route)
+        self.flight2 = sample_flight(
+            route=self.paris_barca_route,
+            departure_time=datetime.datetime(year=2025, month=4, day=19, hour=17, minute=0),
+            arrival_time=datetime.datetime(year=2025, month=4, day=19, hour=21, minute=0)
+        )
+
+    def test_route_filter(self):
+        res = self.client.get(FLIGHT_URL + f"?route={self.barca_paris_route.id}")
+
+        flights = Flight.objects.filter(route__id=self.barca_paris_route.id)
+        serializer = FlightListSerializer(flights, many=True)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_filter_flight_by_exact_date(self):
+        res = self.client.get(FLIGHT_URL + f"?departure_date={self.flight2.departure_time.date()}")
+
+        flights = Flight.objects.filter(departure_time__date=self.flight2.departure_time.date())
+        serializer = FlightListSerializer(flights, many=True)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_filter_flight_by_gt_date(self):
+        res = self.client.get(FLIGHT_URL + f"?departure_date__gt={self.flight1.departure_time.date()}")
+
+        flights = Flight.objects.filter(departure_time__date__gt=self.flight1.departure_time.date())
+        serializer = FlightListSerializer(flights, many=True)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_filter_flight_by_lt_date(self):
+        res = self.client.get(FLIGHT_URL + f"?departure_date__lt={self.flight1.departure_time.date()}")
+
+        flights = Flight.objects.filter(departure_time__date__lt=self.flight1.departure_time.date())
+        serializer = FlightListSerializer(flights, many=True)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_filter_flight_by_exact_time(self):
+        res = self.client.get(FLIGHT_URL + f"?departure_time={self.flight2.departure_time.time()}")
+
+        flights = Flight.objects.filter(departure_time__time=self.flight2.departure_time.time())
+        serializer = FlightListSerializer(flights, many=True)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_filter_flight_by_gt_time(self):
+        res = self.client.get(FLIGHT_URL + f"?departure_time__gt={self.flight1.departure_time.time()}")
+
+        flights = Flight.objects.filter(departure_time__time__gt=self.flight1.departure_time.time())
+        serializer = FlightListSerializer(flights, many=True)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data, serializer.data)
+
+    def test_filter_flight_by_lt_time(self):
+        res = self.client.get(FLIGHT_URL + f"?departure_time__lt={self.flight2.departure_time.time()}")
+
+        flights = Flight.objects.filter(departure_time__time__lt=self.flight2.departure_time.time())
+        serializer = FlightListSerializer(flights, many=True)
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data, serializer.data)
