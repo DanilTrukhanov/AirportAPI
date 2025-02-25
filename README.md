@@ -5,6 +5,7 @@ Please note that this project may contain bugs and is not yet fully completed. I
 API service for airport managment written on DRF, using PostgreSQL and Docker.
 
 ![img.png](scheme.png)
+![img.png](api_root.png)
 
 ## Features
 
@@ -49,3 +50,4 @@ Go to http://localhost:8000/api/
 #### 5. Getting access
 - create user via /api/users/registration/
 - get access token via /api/users/token/
+
