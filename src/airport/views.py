@@ -47,6 +47,9 @@ class CountryViewSet(
     queryset = Country.objects.all()
     serializer_class = CountryListSerializer
     permission_classes = (ReadOnlyUserOrIsAdminPermission,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ("name",)
+    ordering_fields = ("name",)
 
 
 class CityViewSet(
@@ -58,6 +61,9 @@ class CityViewSet(
 ):
     queryset = City.objects.all()
     permission_classes = (ReadOnlyUserOrIsAdminPermission,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter)
+    search_fields = ("name", "country__name")
+    ordering_fields = ("name", "country__name")
 
     def get_queryset(self):
         return self.queryset.select_related("country").prefetch_related("airports")
@@ -77,6 +83,8 @@ class AirportViewSet(
 ):
     queryset = Airport.objects.all()
     permission_classes = (ReadOnlyUserOrIsAdminPermission,)
+    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    search_fields = ("name", "city__name", "city__country__name")
 
     def get_serializer_class(self):
         if self.action in ("create", "update"):
@@ -202,6 +210,11 @@ class OrderViewSet(
 ):
     queryset = Order.objects.all().prefetch_related("tickets")
     permission_classes = (IsAuthenticated,)
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+    )
+    ordering_fields = ("created_at",)
 
     def get_serializer_class(self):
         return OrderSerializer
