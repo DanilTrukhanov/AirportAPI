@@ -146,7 +146,7 @@ class RouteViewSet(
             return RouteListSerializer
         if self.action == "retrieve":
             return RouteRetrieveSerializer
-        return RouteSerializer
+        return self.serializer_class
 
     def get_queryset(self):
         queryset = self.queryset
