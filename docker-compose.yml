@@ -23,7 +23,7 @@ services:
     restart: always
     build: .
     container_name: airport-backend
-    command: ["/bin/sh", "/usr/src/commands/run_cinema_backend.sh"]
+    command: ["/bin/sh", "/usr/src/commands/run_airport_backend.sh"]
     env_file:
       - .env
     ports:
