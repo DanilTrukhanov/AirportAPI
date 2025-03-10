@@ -119,7 +119,7 @@ class FlightSerializer(serializers.ModelSerializer):
     )
 
     def validate(self, data):
-        data = super(FlightSerializer, self).validate(data)
+        data = super().validate(data)
         Flight.validate_time(data["departure_time"], data["arrival_time"])
         return data
 
@@ -207,7 +207,7 @@ class AirplaneTypeListSerializer(serializers.ModelSerializer):
 
 class TicketSerializer(serializers.ModelSerializer):
     def validate(self, data):
-        data = super(TicketSerializer, self).validate(data)
+        data = super().validate(data)
         Ticket.validate_ticket(data["flight"], data["row"], data["seat"])
         return data
 
