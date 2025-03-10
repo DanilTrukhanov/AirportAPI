@@ -44,11 +44,11 @@ class FlightFilter(FilterSet):
 class RouteFilter(FilterSet):
     source = django_filters.ModelChoiceFilter(
         field_name="source",
-        queryset=Airport.objects.all().select_related("city", "city__country"),
+        queryset=Airport.objects.select_related("city", "city__country"),
     )
     destination = django_filters.ModelChoiceFilter(
         field_name="destination",
-        queryset=Airport.objects.all().select_related("city", "city__country"),
+        queryset=Airport.objects.select_related("city", "city__country"),
     )
     has_flights = django_filters.BooleanFilter(
         field_name="flights",
