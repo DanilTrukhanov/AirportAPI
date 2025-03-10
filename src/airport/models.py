@@ -119,18 +119,9 @@ class Flight(models.Model):
     def clean(self):
         Flight.validate_time(self.departure_time, self.arrival_time)
 
-    def save(
-        self,
-        *args,
-        force_insert=False,
-        force_update=False,
-        using=None,
-        update_fields=None,
-    ):
+    def save(self, *args, **kwargs):
         self.full_clean()
-        return super().save(
-            *args, force_insert, force_update, using, update_fields
-        )
+        return super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["departure_time"]
@@ -175,18 +166,9 @@ class Ticket(models.Model):
     def clean(self):
         Ticket.validate_ticket(self.flight, row=self.row, seat=self.seat)
 
-    def save(
-        self,
-        *args,
-        force_insert=False,
-        force_update=False,
-        using=None,
-        update_fields=None,
-    ):
+    def save(self, *args, **kwargs):
         self.full_clean()
-        return super().save(
-            *args, force_insert, force_update, using, update_fields
-        )
+        return super().save(*args, **kwargs)
 
     class Meta:
         constraints = [
